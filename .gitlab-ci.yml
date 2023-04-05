@@ -1,0 +1,12 @@
+
+stages:
+  - build
+  - test
+  - deploy
+
+build-job:
+  tags:
+    - docker_local
+  stage: build
+  script:
+    - echo "Build complete"
