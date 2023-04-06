@@ -1,6 +1,8 @@
 # RSS_Telegram_Bot
 
 
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
 
 ## Getting started
 
