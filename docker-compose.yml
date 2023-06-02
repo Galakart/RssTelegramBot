@@ -18,7 +18,7 @@ services:
 
   bot:
     build: .
-    image: "${IMAGE_NAME}"
+    image: ${IMAGE_NAME}
     restart: on-failure
     stop_signal: SIGINT
     depends_on:

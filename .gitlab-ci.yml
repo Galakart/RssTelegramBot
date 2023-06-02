@@ -3,7 +3,6 @@ image: docker:git
 stages:
   - linting
   - build
-  - staging
   - deploy
 
 before_script:
@@ -23,39 +22,15 @@ build-job:
   tags:
     - docker_local
   stage: build
-  variables:
-    IMAGE_NAME: $CONTAINER_TEST_IMAGE
   script:
     - docker compose build
-    - docker push $CONTAINER_TEST_IMAGE
-
-staging-job:
-  tags:
-    - docker_local
-  stage: staging
-  variables:
-    IMAGE_NAME: $CONTAINER_TEST_IMAGE
-    COMPOSE_PROJECT_NAME: staging_rss_telegram_bot
-  script:
-    - docker compose down --remove-orphans
-    - docker compose pull
-    - docker compose up -d
-  only:
-    - develop
-  when: manual
+    - docker push $IMAGE_NAME
 
 deploy-job:
   tags:
     - docker_local
   stage: deploy
-  variables:
-    IMAGE_NAME: $CONTAINER_RELEASE_IMAGE
-    COMPOSE_PROJECT_NAME: rss_telegram_bot
   script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
-
     - docker compose down --remove-orphans
     - docker compose pull
     - docker compose up -d

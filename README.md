@@ -1,8 +1,24 @@
 # RSS_Telegram_Bot
 
+### Запуск в dev-окружении
 
+1. Скопировать файл-образец переменных окружения (на проде вместо него используются CI/CD Variables)
+```bash
+cp env_example .env
+```
+
+2. Вписать в него токен бота, настройки БД
+
+
+3. Запуск
+```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
 
+3. Остановка
+```bash
+docker compose down
+```
 
 ## Getting started
 
