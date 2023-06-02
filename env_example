@@ -1,0 +1,12 @@
+#copy to .env file
+COMPOSE_PROJECT_NAME=testing_rss_telegram_bot
+IMAGE_NAME=testing_rss_telegram_bot:latest
+
+BOT_TOKEN=
+
+DB_USER=
+DB_PASS=
+DB_NAME=
+DB_DEV_PORT=4432
+DB_HOST=localhost:${DB_DEV_PORT}
+DB_URL=postgresql+psycopg://${DB_USER}:${DB_PASS}@${DB_HOST}/${DB_NAME}

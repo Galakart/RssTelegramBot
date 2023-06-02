@@ -1,0 +1,6 @@
+version: '3.8'
+
+services:
+  db:
+    ports:
+      - "${DB_DEV_PORT}:5432"
