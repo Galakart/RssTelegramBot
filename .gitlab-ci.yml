@@ -31,7 +31,8 @@ deploy-job:
     - docker_local
   stage: deploy
   script:
-    - cp ${ENV_FILE} .env
+    - ls
+    - cp ${ENV_FILE} ./.env
     - docker compose down --remove-orphans
     - docker compose pull
     - docker compose up -d
