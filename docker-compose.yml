@@ -21,6 +21,9 @@ services:
     image: ${IMAGE_NAME}
     restart: on-failure
     stop_signal: SIGINT
+    environment:
+      - BOT_TOKEN
+      - DB_URL
     depends_on:
       db:
         condition: service_healthy
