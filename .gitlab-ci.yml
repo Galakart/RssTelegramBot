@@ -15,7 +15,7 @@ pylint-job:
   image: pipelinecomponents/pylint:latest
   before_script: []
   script:
-    - pip -r requirements.txt
+    - pip install -r requirements.txt
     - pylint **/*.py
   allow_failure: true
 
