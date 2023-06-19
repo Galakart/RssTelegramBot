@@ -10,3 +10,5 @@ DB_NAME=
 DB_DEV_PORT=4432
 DB_HOST=localhost:${DB_DEV_PORT}
 DB_URL=postgresql+psycopg://${DB_USER}:${DB_PASS}@${DB_HOST}/${DB_NAME}
+
+GRAYLOG_HOST=
