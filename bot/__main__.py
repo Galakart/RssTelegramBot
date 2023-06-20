@@ -8,7 +8,7 @@ from pygelf import GelfUdpHandler
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from bot.config_reader import config
-from bot.handlers import router_commands
+from bot.handlers import router_default_commands, router_menu
 from bot.middlewares import DbSessionMiddleware
 from bot.ui_commands import set_ui_commands
 
@@ -33,7 +33,8 @@ async def main():
     dp = Dispatcher(storage=RedisStorage(redis=RedisStorage.from_url("redis://redis:6379/0").redis))
     dp.update.middleware(DbSessionMiddleware(session_pool=sessionmaker))
 
-    dp.include_router(router_commands.router)
+    dp.include_router(router_default_commands.router)
+    dp.include_router(router_menu.router)
 
     await set_ui_commands(bot)
 
