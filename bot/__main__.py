@@ -2,12 +2,15 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters.command import Command
+from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from pygelf import GelfUdpHandler
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from bot.config_reader import config
+from bot.handlers import router_commands
+from bot.middlewares import DbSessionMiddleware
+from bot.ui_commands import set_ui_commands
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger()
@@ -21,16 +24,20 @@ gelf_handler = GelfUdpHandler(
 LOGGER.addHandler(gelf_handler)
 
 
-bot = Bot(token=config.bot_token.get_secret_value())
-dp = Dispatcher(storage=RedisStorage(redis=RedisStorage.from_url("redis://redis:6379").redis))
-
-
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer("Hello!")
-
-
 async def main():
+    engine = create_async_engine(url=config.db_url, echo=False)
+    sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
+
+    bot = Bot(config.bot_token.get_secret_value(), parse_mode="HTML")
+
+    dp = Dispatcher(storage=RedisStorage(redis=RedisStorage.from_url("redis://redis:6379/0").redis))
+    dp.update.middleware(DbSessionMiddleware(session_pool=sessionmaker))
+
+    dp.include_router(router_commands.router)
+
+    await set_ui_commands(bot)
+
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
