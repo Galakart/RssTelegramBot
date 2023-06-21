@@ -4,7 +4,7 @@
 
 1. Скопировать файл-образец переменных окружения (на проде вместо него используются CI/CD Variables)
 ```bash
-cp env_example .env
+cp env_dev_example .env
 ```
 
 2. Вписать в него токен бота, настройки БД
@@ -15,7 +15,11 @@ cp env_example .env
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
-3. Остановка
+4. Запуск только db контейнера (для создания миграций)
+```bash
+docker compose -f docker-compose.db_only.yml up -d
+
+5. Остановка
 ```bash
 docker compose down
 ```

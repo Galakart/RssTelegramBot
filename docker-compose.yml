@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   db:
@@ -16,13 +16,31 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes: 
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
   bot:
     build: .
     image: ${IMAGE_NAME}
-    restart: on-failure
+    restart: always
     stop_signal: SIGINT
+    environment:
+      - BOT_TOKEN
+      - DB_URL
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: >
       bash -c "alembic upgrade head &&
@@ -30,3 +48,4 @@ services:
 
 volumes:
   pg_data:
+  redis_data:
