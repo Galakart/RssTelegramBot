@@ -1,3 +1,4 @@
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,5 +25,6 @@ async def reg_user(message: Message, session: AsyncSession) -> bool:
     return False
 
 
-async def show_mainmenu(message: Message):
+async def show_mainmenu(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer('Вы в главном меню', reply_markup=keyboards.get_mainmenu_keyb())
