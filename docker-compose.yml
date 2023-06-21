@@ -35,6 +35,8 @@ services:
     restart: always
     stop_signal: SIGINT
     environment:
+      - COMPOSE_PROJECT_NAME
+      - GRAYLOG_HOST
       - BOT_TOKEN
       - DB_URL
     depends_on:
