@@ -19,6 +19,7 @@ class FeedPost(Base):
     __table_args__ = {"comment": "Посты в ленте"}
 
     id = Column(BigInteger, primary_key=True)
+    id_feed = Column(BigInteger, ForeignKey('feeds.id'), nullable=False)
     title = Column(Text)
     description = Column(Text, nullable=False)
     link = Column(Text)

@@ -4,9 +4,11 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pygelf import GelfUdpHandler
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from bot import feed_processor
 from bot.config_reader import config
 from bot.handlers import router_default_commands, router_menu
 from bot.middlewares import DbSessionMiddleware
@@ -35,6 +37,10 @@ async def main():
 
     dp.include_router(router_default_commands.router)
     dp.include_router(router_menu.router)
+
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(feed_processor.update_feeds, "interval", minutes=1, args=(sessionmaker,))
+    scheduler.start()
 
     await set_ui_commands(bot)
 
