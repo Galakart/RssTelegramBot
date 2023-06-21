@@ -1,22 +1,11 @@
 image: docker:git
 
 stages:
-  - linting
   - build
   - deploy
 
 before_script:
   - docker login -u gitlab-ci-runner -p $CI_ACCESS_PASSWORD $CI_REGISTRY
-
-pylint-job:
-  tags:
-    - docker_local
-  stage: linting
-  image: pipelinecomponents/pylint:latest
-  before_script: []
-  script:
-    - pylint **/*.py
-  allow_failure: true
 
 build-job:
   tags:
@@ -31,7 +20,6 @@ deploy-job:
     - docker_local
   stage: deploy
   script:
-    - cp ${ENV_FILE} ./bot/.env
     - docker compose down --remove-orphans
     - docker compose pull
     - docker compose up -d
