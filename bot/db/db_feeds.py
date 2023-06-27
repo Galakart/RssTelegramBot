@@ -81,3 +81,31 @@ async def update_feed(session: AsyncSession, new_feed_item: Feed) -> bool:
         await session.commit()
 
     return True
+
+
+async def get_feeds_posts_for_send(session: AsyncSession):
+    db_query = await session.execute(
+        select(FeedPost, UserFeed, Feed)
+        .join(UserFeed, FeedPost.id_feed == UserFeed.id_feed, isouter=True)
+        .join(Feed, FeedPost.id_feed == Feed.id, isouter=True)
+        .where(
+            or_(
+                UserFeed.id_last_post == None,
+                UserFeed.id_last_post < FeedPost.id,
+            )
+        )
+        .order_by(FeedPost.id)
+        .limit(20)  # лимит Телеграма на кол-во сообщений от бота в одном чате за минуту
+    )
+    return db_query.all()
+
+
+async def update_user_feeds_last_post(session: AsyncSession, results: list[tuple[int, int, int]]) -> bool:
+    for id_user, id_feed, id_last_post in results:
+        user_feed_item = await session.get(UserFeed, [id_user, id_feed])
+        if user_feed_item:
+            user_feed_item.id_last_post = id_last_post
+            session.add(user_feed_item)
+
+    await session.commit()
+    return True

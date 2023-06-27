@@ -24,6 +24,7 @@ gelf_handler = GelfUdpHandler(
     _appname=config.compose_project_name,
 )
 LOGGER.addHandler(gelf_handler)
+logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 
 
 async def main():
@@ -40,6 +41,7 @@ async def main():
 
     scheduler = AsyncIOScheduler()
     scheduler.add_job(feed_processor.update_feeds, "interval", minutes=1, args=(sessionmaker,))
+    scheduler.add_job(feed_processor.send_feeds, "interval", minutes=1, args=(sessionmaker, bot))
     scheduler.start()
 
     await set_ui_commands(bot)

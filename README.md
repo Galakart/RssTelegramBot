@@ -12,16 +12,16 @@ cp env_dev_example .env
 
 3. Запуск
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+./start_dev.sh
 ```
 
 4. Запуск только db контейнера (для создания миграций)
 ```bash
-docker compose -f docker-compose.db_only.yml up -d
+./start_dbonly.sh
 
 5. Остановка
 ```bash
-docker compose down
+./stop.sh
 ```
 
 ## Getting started

@@ -12,21 +12,19 @@ services:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-d", "${DB_NAME}", "-U", "${DB_USER}" ]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
     restart: always
-    ports:
-      - '6379:6379'
     volumes: 
       - redis_data:/data
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 1s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 5
 
   bot:
@@ -39,6 +37,7 @@ services:
       - GRAYLOG_HOST
       - BOT_TOKEN
       - DB_URL
+      - TZ
     depends_on:
       db:
         condition: service_healthy
