@@ -4,10 +4,11 @@ import re
 import time
 
 import feedparser
+from aiogram import Bot
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from bot.db import db_feeds
-from bot.models.model_feed import Feed, FeedPost
+from bot.models.model_feed import Feed, FeedPost, UserFeed
 
 LOGGER = logging.getLogger()
 
@@ -26,6 +27,8 @@ allowed_tags = [
     'pre',
 ]
 
+TG_MAX_MESSAGES_COUNT_PER_MINUTE = 20
+
 
 async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
     async with async_session() as session:
@@ -35,6 +38,7 @@ async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
         feed_item: Feed
         for feed_item in feeds_tuple:
             last_post = await db_feeds.get_feed_last_post(session, feed_item.id)
+            LOGGER.info('feedparser is parsing the feed %s', feed_item.title)
             d = feedparser.parse(feed_item.link)
             if 'title' not in d.feed:
                 LOGGER.warning('Не удалось скачать данные ленты %s: %s', feed_item.id, feed_item.title)
@@ -71,8 +75,43 @@ async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
             await db_feeds.add_feed_posts_lst(session, feed_posts_lst)
 
 
-# if len(description_clean) > 4095:
-#     for x in range(0, len(description_clean), 4095):
-#         await message.answer(description_clean[x:x+4095])
-# else:
-#     await message.answer(description_clean)
+async def send_feeds(async_session: async_sessionmaker[AsyncSession], bot: Bot):
+    async with async_session() as session:
+        feeds_posts_tuple = await db_feeds.get_feeds_posts_for_send(session)
+        if not feeds_posts_tuple:
+            return
+
+        results_lst = []
+        sent_count = 0
+
+        feed_post_item: FeedPost
+        user_feed_item: UserFeed
+        feed_item: Feed
+        for row_item in feeds_posts_tuple:
+            feed_post_item, user_feed_item, feed_item = row_item
+
+            mes = (
+                f'<b>{feed_item.title}</b>\n\n'
+                f'<i>{feed_post_item.title}</i>\n'
+                f'{feed_post_item.description}\n\n'
+                f'Ссылка: {feed_post_item.link}'
+            )
+
+            try:
+                if len(mes) > 4095:
+                    for x in range(0, len(mes), 4095):
+                        await bot.send_message(user_feed_item.id_user, mes[x:x + 4095])
+                        sent_count += 1
+                else:
+                    await bot.send_message(user_feed_item.id_user, mes)
+                    sent_count += 1
+            except Exception as ex:
+                LOGGER.error(ex)
+                continue
+
+            results_lst.append((user_feed_item.id_user, feed_post_item.id_feed, feed_post_item.id))
+
+            if sent_count >= TG_MAX_MESSAGES_COUNT_PER_MINUTE:
+                break
+
+        await db_feeds.update_user_feeds_last_post(session, results_lst)
