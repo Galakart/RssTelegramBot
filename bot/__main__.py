@@ -30,10 +30,11 @@ logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 async def main():
     engine = create_async_engine(url=config.db_url, echo=False)
     sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
-
     bot = Bot(config.bot_token.get_secret_value(), parse_mode="HTML")
 
-    dp = Dispatcher(storage=RedisStorage(redis=RedisStorage.from_url("redis://redis:6379/0").redis))
+    # такому простому боту не нужен redis
+    # dp = Dispatcher(storage=RedisStorage(redis=RedisStorage.from_url("redis://redis:6379/0").redis))
+    dp = Dispatcher()
     dp.update.middleware(DbSessionMiddleware(session_pool=sessionmaker))
 
     dp.include_router(router_default_commands.router)
