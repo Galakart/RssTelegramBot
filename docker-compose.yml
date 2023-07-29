@@ -16,16 +16,16 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    restart: always
-    volumes: 
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: always
+  #   volumes: 
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   bot:
     build: .
@@ -41,8 +41,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
     command: >
       bash -c "alembic upgrade head &&
       python -m bot"   
