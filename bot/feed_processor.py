@@ -57,7 +57,8 @@ async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
                 # кроме тех что в allowed_tags (разрешённые в telegram parse_mode='html')
                 # также удаляет всякое в стиле &nbsp;
                 # за регулярку спасибо ChatGPT
-                description_clean = re.compile(rf'<(?!\/?(?:{"|".join(allowed_tags)})(?=>|\s.*>))\/?.*?>|(&.*?;)').sub('', entry.description)
+                description_clean = entry.description.replace('<br />', '\n')
+                description_clean = re.compile(rf'<(?!\/?(?:{"|".join(allowed_tags)})(?=>|\s.*>))\/?.*?>|(&.*?;)').sub('', description_clean)
 
                 new_feed_post = FeedPost(
                     id_feed=feed_item.id,
