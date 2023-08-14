@@ -2,13 +2,13 @@ import feedparser
 from aiogram import Router
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot import keyboards
+from bot.cbdata import FeedActions, FeedActionsFactory, FeedsListFactory
 from bot.db import db_feeds
 from bot.filters.filter_users import IsUserReg
-from bot.models.model_feed import Feed
 from bot.states import NewFeedState
 
 from .shared_actions import show_mainmenu
@@ -20,14 +20,33 @@ router.message.filter(IsUserReg())
 @router.message(Text('Мои ленты'))
 async def cmd_myfeeds(message: Message, session: AsyncSession):
     feeds_tuple = await db_feeds.get_user_feeds(session, message.chat.id)
-    if feeds_tuple:
-        mes = ''
-        feed_item: Feed
-        for feed_item in feeds_tuple:
-            mes += f'🔹 {feed_item.title}: {feed_item.link}\n\n'
-        await message.answer(mes)
-    else:
+    if not feeds_tuple:
         await message.answer('Вы не подписаны ни на одну ленту')
+        return
+
+    await message.answer("Подписки:", reply_markup=keyboards.get_feeds_list_inlinekeyb(feeds_tuple))
+
+
+@router.callback_query(FeedsListFactory.filter())
+async def cmd_feed_info(callback: CallbackQuery, callback_data: FeedsListFactory, session: AsyncSession):
+    feed_item = await db_feeds.get_feed(session, callback_data.id_feed)
+    mes = (
+        f'{feed_item.title}\n'
+        f'Ссылка: {feed_item.link}'
+    )
+
+    await callback.message.answer(mes, reply_markup=keyboards.get_feed_actions_inlinekeyb(feed_item.id))
+    await callback.answer()
+
+
+@router.callback_query(FeedActionsFactory.filter())
+async def cmd_feed_action(callback: CallbackQuery, callback_data: FeedActionsFactory, session: AsyncSession):
+    if callback_data.action == FeedActions.DELETE.value:
+        result = await db_feeds.delete_user_feed(session, callback.from_user.id, callback_data.id_feed)
+        mes = 'Лента удалена' if result else 'Ошибка удаления ленты'
+        await callback.message.answer(mes)
+
+    await callback.answer()
 
 
 @router.message(Text('Подписаться на новую'))

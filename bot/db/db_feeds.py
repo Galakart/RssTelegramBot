@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot.models.model_feed import Feed, FeedPost, UserFeed
 
 
-async def get_user_feeds(session: AsyncSession, id_user: int):
+async def get_user_feeds(session: AsyncSession, id_user: int) -> tuple[Feed] | None:
     db_query = await session.execute(
         select(Feed)
         .join(UserFeed, isouter=True)
@@ -14,6 +14,20 @@ async def get_user_feeds(session: AsyncSession, id_user: int):
     )
     items_tuple = db_query.scalars().all()
     return items_tuple
+
+
+async def get_feed(session: AsyncSession, id_feed: int) -> Feed | None:
+    feed_item = await session.get(Feed, id_feed)
+    return feed_item
+
+
+async def delete_user_feed(session: AsyncSession, id_user: int, id_feed: int) -> bool:
+    feed_user_item = await session.get(UserFeed, [id_user, id_feed])
+    if feed_user_item:
+        await session.delete(feed_user_item)
+        await session.commit()
+
+    return True
 
 
 async def add_feed(session: AsyncSession, link: str, title: str, id_user: int) -> bool:
@@ -31,11 +45,19 @@ async def add_feed(session: AsyncSession, link: str, title: str, id_user: int) -
         session.add(feed_item)
         await session.flush()
 
+    db_query = await session.execute(
+        select(FeedPost)
+        .where(FeedPost.id_feed == feed_item.id)
+        .order_by(desc(FeedPost.id))
+    )
+    feed_last_post_item = db_query.scalar()
+
     feed_user_item = await session.get(UserFeed, [id_user, feed_item.id])
     if not feed_user_item:
         feed_user_item = UserFeed(
             id_user=id_user,
-            id_feed=feed_item.id
+            id_feed=feed_item.id,
+            id_last_post=feed_last_post_item.id if feed_last_post_item else None
         )
         session.add(feed_user_item)
 
