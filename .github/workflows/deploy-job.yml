@@ -1,0 +1,16 @@
+name: Docker Image CI
+
+on:
+    push:
+        branches: [ "develop" ]
+    pull_request:
+        branches: [ "master" ]
+
+jobs:
+    deploy:
+        runs-on: self-hosted
+        steps:
+          - name: checkout repo
+            uses: actions/checkout@v3
+          - name: docker compose
+            run: docker compose up -d --build
