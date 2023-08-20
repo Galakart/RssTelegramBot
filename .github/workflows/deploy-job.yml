@@ -2,18 +2,22 @@ name: Docker Image CI
 
 on:
   push:
-      branches: [ "develop" ]
+    branches: [ "develop" ]
   pull_request:
-      branches: [ "master" ]
+    branches: [ "master" ]
 
 env:
   COMPOSE_PROJECT_NAME: ${{ vars.COMPOSE_PROJECT_NAME }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  TZ: ${{ vars.TZ }}
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  DB_URL: postgresql+psycopg://${{ secrets.DB_USER }}:${{ secrets.DB_PASS }}@db:4432/${{ secrets.DB_NAME }}
 
 jobs:
   deploy:        
-      runs-on: self-hosted
-      steps:
-        - name: checkout repo
-          uses: actions/checkout@v3
-        - name: docker compose
-          run: docker compose up -d --build
+    runs-on: self-hosted
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - name: docker compose
+        run: docker compose up -d --build
