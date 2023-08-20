@@ -11,6 +11,9 @@ env:
   IMAGE_NAME: ${{ vars.IMAGE_NAME }}
   TZ: ${{ vars.TZ }}
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASS: ${{ secrets.DB_PASS }}
+  DB_NAME: ${{ secrets.DB_NAME }}
   DB_URL: postgresql+psycopg://${{ secrets.DB_USER }}:${{ secrets.DB_PASS }}@db:4432/${{ secrets.DB_NAME }}
 
 jobs:
