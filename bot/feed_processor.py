@@ -1,3 +1,4 @@
+"""Операции по таймеру с RSS-лентами"""
 import datetime
 import logging
 import re
@@ -12,7 +13,8 @@ from bot.models.model_feed import Feed, FeedPost, UserFeed
 
 LOGGER = logging.getLogger()
 
-allowed_tags = [
+# html-теги, которые разрешено отправлять в телеграме при parse_mode="HTML"
+TG_ALLOWED_TAGS = [
     'b',
     'strong',
     'i',
@@ -27,20 +29,22 @@ allowed_tags = [
     'pre',
 ]
 
+# ограничение телеграма на количество сообщений в одном чате в минуту
 TG_MAX_MESSAGES_COUNT_PER_MINUTE = 20
 
 
 async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
+    """Обновление лент (поиск и сохранение новых постов)"""
     async with async_session() as session:
-        feeds_tuple = await db_feeds.get_feeds_for_update(session)  # TODO сейчас период обновления для всех 12 часов
+        feeds_tuple = await db_feeds.get_feeds_for_update(session)  # FIXME сейчас период обновления для всех 12 часов
         feed_posts_lst = []
 
         feed_item: Feed
         for feed_item in feeds_tuple:
-            last_post = await db_feeds.get_feed_last_post(session, feed_item.id)
+            last_post = await db_feeds.get_feed_last_post(session, feed_item.id)  # type: ignore
             LOGGER.info('feedparser is parsing the feed %s', feed_item.title)
-            d = feedparser.parse(feed_item.link)
-            if 'title' not in d.feed:
+            rss_data = feedparser.parse(feed_item.link)
+            if 'title' not in rss_data.feed:
                 LOGGER.warning('Не удалось скачать данные ленты %s: %s', feed_item.id, feed_item.title)
                 continue
 
@@ -48,17 +52,18 @@ async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
             # чтобы не захламлять отправку старыми постами.
             count_posts_for_search = None if last_post else 5
 
-            for entry in reversed(d.entries[:count_posts_for_search]):
+            for entry in reversed(rss_data.entries[:count_posts_for_search]):
                 datetime_published = datetime.datetime.fromtimestamp(time.mktime(entry.published_parsed))
-                if last_post and last_post.datetime_published >= datetime_published:
+                if last_post and last_post.datetime_published >= datetime_published:  # type: ignore
                     continue
 
                 # регулярка удаляет все html-теги в строке,
-                # кроме тех что в allowed_tags (разрешённые в telegram parse_mode='html')
+                # кроме тех что в TG_ALLOWED_TAGS
                 # также удаляет всякое в стиле &nbsp;
                 # за регулярку спасибо ChatGPT
                 description_clean = entry.description.replace('<br />', '\n')
-                description_clean = re.compile(rf'<(?!\/?(?:{"|".join(allowed_tags)})(?=>|\s.*>))\/?.*?>|(&.*?;)').sub('', description_clean)
+                description_clean = re.compile(rf'<(?!\/?(?:{"|".join(TG_ALLOWED_TAGS)})(?=>|\s.*>))\/?.*?>|(&.*?;)') \
+                    .sub('', description_clean)
 
                 new_feed_post = FeedPost(
                     id_feed=feed_item.id,
@@ -69,7 +74,7 @@ async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
                 )
                 feed_posts_lst.append(new_feed_post)
 
-            feed_item.datetime_last_update = datetime.datetime.now()
+            feed_item.datetime_last_update = datetime.datetime.now()  # type: ignore
             await db_feeds.update_feed(session, feed_item)
 
         if feed_posts_lst:
@@ -77,6 +82,7 @@ async def update_feeds(async_session: async_sessionmaker[AsyncSession]):
 
 
 async def send_feeds(async_session: async_sessionmaker[AsyncSession], bot: Bot):
+    """Отправка постов пользователям"""
     async with async_session() as session:
         feeds_posts_tuple = await db_feeds.get_feeds_posts_for_send(session)
         if not feeds_posts_tuple:
@@ -100,11 +106,11 @@ async def send_feeds(async_session: async_sessionmaker[AsyncSession], bot: Bot):
 
             try:
                 if len(mes) > 4095:
-                    for x in range(0, len(mes), 4095):
-                        await bot.send_message(user_feed_item.id_user, mes[x:x + 4095])
+                    for offset in range(0, len(mes), 4095):
+                        await bot.send_message(user_feed_item.id_user, mes[offset:offset + 4095])  # type: ignore
                         sent_count += 1
                 else:
-                    await bot.send_message(user_feed_item.id_user, mes)
+                    await bot.send_message(user_feed_item.id_user, mes)  # type: ignore
                     sent_count += 1
             except Exception as ex:
                 LOGGER.error(ex)

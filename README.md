@@ -1,5 +1,17 @@
 # RSS_Telegram_Bot
 
+[![Docker Image CI](https://github.com/Galakart/RssTelegramBot/actions/workflows/deploy-job.yml/badge.svg)](https://github.com/Galakart/RssTelegramBot/actions/workflows/deploy-job.yml)
+
+
+остановка
+docker compose down | yes | docker image prune
+
+запуск dev
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+запуск только БД
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+
 ### Запуск в dev-окружении
 
 1. Скопировать файл-образец переменных окружения (на проде вместо него используются CI/CD Variables)

@@ -1,9 +1,13 @@
+"""Модели лент новостей"""
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Text
 
 from .base import Base
 
+# pylint: disable=too-few-public-methods
+
 
 class Feed(Base):
+    """RSS ленты"""
     __tablename__ = "feeds"
     __table_args__ = {"comment": "RSS ленты"}
 
@@ -15,6 +19,7 @@ class Feed(Base):
 
 
 class FeedPost(Base):
+    """Посты в ленте"""
     __tablename__ = "feed_posts"
     __table_args__ = {"comment": "Посты в ленте"}
 
@@ -27,6 +32,7 @@ class FeedPost(Base):
 
 
 class UserFeed(Base):
+    """Ленты на которые подписан юзер"""
     __tablename__ = "user_feeds"
     __table_args__ = {"comment": "Ленты на которые подписан юзер"}
 

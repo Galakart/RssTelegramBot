@@ -1,3 +1,4 @@
+"""Операции в БД с RSS-лентами"""
 import datetime
 
 from sqlalchemy import desc, or_, select
@@ -7,21 +8,24 @@ from bot.models.model_feed import Feed, FeedPost, UserFeed
 
 
 async def get_user_feeds(session: AsyncSession, id_user: int) -> tuple[Feed] | None:
+    """Получить все ленты пользователя по его id"""
     db_query = await session.execute(
         select(Feed)
         .join(UserFeed, isouter=True)
         .where(UserFeed.id_user == id_user)
     )
     items_tuple = db_query.scalars().all()
-    return items_tuple
+    return items_tuple  # type: ignore
 
 
 async def get_feed(session: AsyncSession, id_feed: int) -> Feed | None:
+    """Получить ленту по id"""
     feed_item = await session.get(Feed, id_feed)
     return feed_item
 
 
 async def delete_user_feed(session: AsyncSession, id_user: int, id_feed: int) -> bool:
+    """Удалить ленту (только из подписок пользователя)"""
     feed_user_item = await session.get(UserFeed, [id_user, id_feed])
     if feed_user_item:
         await session.delete(feed_user_item)
@@ -31,6 +35,7 @@ async def delete_user_feed(session: AsyncSession, id_user: int, id_feed: int) ->
 
 
 async def add_feed(session: AsyncSession, link: str, title: str, id_user: int) -> bool:
+    """Добавить новую ленту (если ещё не существует), и подписать на ней пользователя"""
     db_query = await session.execute(
         select(Feed)
         .where(Feed.link == link)
@@ -66,6 +71,7 @@ async def add_feed(session: AsyncSession, link: str, title: str, id_user: int) -
 
 
 async def get_feeds_for_update(session: AsyncSession):
+    """Список лент для обновления постов"""
     db_query = await session.execute(
         select(Feed)
         .where(
@@ -80,6 +86,7 @@ async def get_feeds_for_update(session: AsyncSession):
 
 
 async def get_feed_last_post(session: AsyncSession, id_feed: int) -> FeedPost | None:
+    """Последний пост в ленте"""
     db_query = await session.execute(
         select(FeedPost)
         .where(FeedPost.id_feed == id_feed)
@@ -90,15 +97,17 @@ async def get_feed_last_post(session: AsyncSession, id_feed: int) -> FeedPost | 
 
 
 async def add_feed_posts_lst(session: AsyncSession, feed_posts_lst: list[FeedPost]) -> bool:
+    """Сохранить посты ленты"""
     session.add_all(feed_posts_lst)
     await session.commit()
     return True
 
 
 async def update_feed(session: AsyncSession, new_feed_item: Feed) -> bool:
+    """Обновить параметры ленты"""
     feed_item = await session.get(Feed, new_feed_item.id)
     if feed_item:
-        feed_item.datetime_last_update = new_feed_item.datetime_last_update  # TODO пока только это поле
+        feed_item.datetime_last_update = new_feed_item.datetime_last_update
         session.add(feed_item)
         await session.commit()
 
@@ -106,6 +115,7 @@ async def update_feed(session: AsyncSession, new_feed_item: Feed) -> bool:
 
 
 async def get_feeds_posts_for_send(session: AsyncSession):
+    """Список постов для отправки пользователям"""
     db_query = await session.execute(
         select(FeedPost, UserFeed, Feed)
         .join(UserFeed, FeedPost.id_feed == UserFeed.id_feed, isouter=True)
@@ -123,10 +133,11 @@ async def get_feeds_posts_for_send(session: AsyncSession):
 
 
 async def update_user_feeds_last_post(session: AsyncSession, results: list[tuple[int, int, int]]) -> bool:
+    """Обновить id последнего поста ленты, отправленного пользователю"""
     for id_user, id_feed, id_last_post in results:
         user_feed_item = await session.get(UserFeed, [id_user, id_feed])
         if user_feed_item:
-            user_feed_item.id_last_post = id_last_post
+            user_feed_item.id_last_post = id_last_post  # type: ignore
             session.add(user_feed_item)
 
     await session.commit()
