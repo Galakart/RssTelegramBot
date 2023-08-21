@@ -56,33 +56,27 @@ async def cmd_newfeed_link_ask(message: Message, state: FSMContext):
 
 
 @router.message(NewFeedState.ask_newfeed_link)
-async def cmd_newfeed_link_save(message: Message, state: FSMContext):
+async def cmd_newfeed_link_save(message: Message, session: AsyncSession, state: FSMContext):
     link = message.text
     d = feedparser.parse(link)
     if 'title' not in d.feed:
         await message.answer('Ссылка не распознана как RSS-лента')
         await show_mainmenu(message, state)
         return
-    title = d.feed.title
 
+    # в основном у лент название в title, но у некоторых нормальное название именно в поле description
+    if 'description' in d.feed and d.feed.description:
+        title = d.feed.description
+    else:
+        title = d.feed.title
+
+    # строки оставлены как пример использования state.get_data(),
+    # понятно что внутри одного метода их использовать не нужно
     await state.update_data(link=link, title=title)
-    mes = (
-        'Название RSS-ленты будет:\n'
-        f'<b>{title}</b>\n\n'
-        'Нажмите кнопку Далее, или введите прямо тут своё название'
-    )
-    await message.answer(mes, reply_markup=keyboards.get_cancel_accept_keyb())
-    await state.set_state(NewFeedState.ask_newfeed_customtitle)
-
-
-@router.message(NewFeedState.ask_newfeed_customtitle)
-async def cmd_newfeed_customtitle_save(message: Message, session: AsyncSession, state: FSMContext):
-    if message.text != 'Далее':
-        await state.update_data(title=message.text)
-
     user_data = await state.get_data()
+
     if await db_feeds.add_feed(session, user_data['link'], user_data['title'], message.chat.id):
-        await message.answer('RSS-лента добавлена')
+        await message.answer(f'RSS-лента <b>{title}</b> добавлена')
     else:
         await message.answer('Ошибка при сохранении')
 
