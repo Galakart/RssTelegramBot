@@ -1,8 +1,6 @@
-name: Docker Image CI
+name: Deploy on Docker
 
 on:
-  push:
-    branches: [ "develop" ]
   pull_request:
     branches: [ "master" ]
 
@@ -15,9 +13,28 @@ env:
   DB_PASS: ${{ secrets.DB_PASS }}
   DB_NAME: ${{ secrets.DB_NAME }}
   DB_URL: postgresql+psycopg://${{ secrets.DB_USER }}:${{ secrets.DB_PASS }}@db/${{ secrets.DB_NAME }}
-  GRAYLOG_HOST: localhost
+  GRAYLOG_HOST: ${{ secrets.GRAYLOG_HOST }}
 
 jobs:
+  lint:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint
+    - name: Analysing the code with pylint
+      run: |
+        pylint $(git ls-files '*.py')
+
   deploy:        
     runs-on: self-hosted
     steps:
