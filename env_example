@@ -6,9 +6,9 @@ TZ=Asia/Novokuznetsk
 
 BOT_TOKEN=
 
-DB_USER=
-DB_PASS=
-DB_NAME=
+DB_USER=enter_some_user_name_here
+DB_PASS=enter_some_user_password_here
+DB_NAME=rss_telegram_bot
 DB_URL=postgresql+psycopg://${DB_USER}:${DB_PASS}@db/${DB_NAME}
 DB_DEV_PORT=4432 # используется в docker-compose.dev.yml
 
