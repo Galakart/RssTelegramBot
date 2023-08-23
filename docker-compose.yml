@@ -48,5 +48,5 @@ services:
       python -m bot"   
 
 volumes:
-  pg_data:
+  # pg_data:
   redis_data:

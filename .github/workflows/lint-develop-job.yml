@@ -3,9 +3,6 @@ name: Linting Python files
 on:
   push:
     branches: [ "develop" ]
-    # branches:
-    #   - '*'
-    #   - '!master'
 
 jobs:
   lint:
