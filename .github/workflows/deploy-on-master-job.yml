@@ -1,0 +1,25 @@
+name: Deploy on Docker
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  COMPOSE_PROJECT_NAME: ${{ vars.COMPOSE_PROJECT_NAME }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  TZ: ${{ vars.TZ }}
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASS: ${{ secrets.DB_PASS }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_URL: postgresql+psycopg://${{ secrets.DB_USER }}:${{ secrets.DB_PASS }}@db/${{ secrets.DB_NAME }}
+  GRAYLOG_HOST: ${{ secrets.GRAYLOG_HOST }}
+
+jobs:
+  deploy:        
+    runs-on: self-hosted
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - name: docker compose
+        run: docker compose up -d --build

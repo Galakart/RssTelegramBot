@@ -1,3 +1,5 @@
+"""Класс с конфигурациями из переменных окружения"""
+# pylint: disable=no-name-in-module,too-few-public-methods
 from pydantic import BaseSettings, PostgresDsn, SecretStr
 
 
@@ -12,4 +14,4 @@ class Settings(BaseSettings):
         env_file_encoding = 'utf-8'
 
 
-config = Settings()
+config = Settings()  # type: ignore

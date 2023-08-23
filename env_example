@@ -1,0 +1,15 @@
+# скопировать этот файл в .env
+COMPOSE_PROJECT_NAME=rss_telegram_bot
+IMAGE_NAME=${COMPOSE_PROJECT_NAME}:latest
+
+TZ=Asia/Novokuznetsk
+
+BOT_TOKEN=
+
+DB_USER=enter_some_user_name_here
+DB_PASS=enter_some_user_password_here
+DB_NAME=rss_telegram_bot
+DB_URL=postgresql+psycopg://${DB_USER}:${DB_PASS}@db/${DB_NAME}
+DB_DEV_PORT=4432 # используется в docker-compose.dev.yml
+
+GRAYLOG_HOST=localhost
