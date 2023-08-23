@@ -15,8 +15,8 @@ def remove_keyb() -> ReplyKeyboardRemove:
 def get_mainmenu_keyb() -> ReplyKeyboardMarkup:
     """Клавиатура главного меню"""
     keyb = ReplyKeyboardBuilder()
-    keyb.button(text="Мои ленты")
-    keyb.button(text="Подписаться на новую")
+    keyb.button(text="📃Мои ленты")
+    keyb.button(text="📫Подписаться на новую")
     keyb.adjust(2)
     return keyb.as_markup(resize_keyboard=True)
 
@@ -24,16 +24,7 @@ def get_mainmenu_keyb() -> ReplyKeyboardMarkup:
 def get_onlycancel_keyb() -> ReplyKeyboardMarkup:
     """Клавиатура только с кнопкой Отмена"""
     keyb = ReplyKeyboardBuilder()
-    keyb.button(text="Отмена")
-    return keyb.as_markup(resize_keyboard=True)
-
-
-def get_cancel_accept_keyb() -> ReplyKeyboardMarkup:
-    """Клавиатура с кнопками Отмена и Далее"""
-    keyb = ReplyKeyboardBuilder()
-    keyb.button(text="Отмена")
-    keyb.button(text="Далее")
-    keyb.adjust(2)
+    keyb.button(text="❌Отмена")
     return keyb.as_markup(resize_keyboard=True)
 
 

@@ -25,7 +25,7 @@ async def cmd_start(message: Message, session: AsyncSession, state: FSMContext):
         await show_mainmenu(message, state)
 
 
-@router.message(IsUserReg(), Text('Отмена'))
+@router.message(IsUserReg(), Text('❌Отмена'))
 async def cmd_cancel(message: Message, state: FSMContext):
     """Возврат в главное меню из любого места по тексту Отмена"""
     await show_mainmenu(message, state)

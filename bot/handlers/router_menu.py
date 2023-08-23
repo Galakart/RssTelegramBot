@@ -18,7 +18,7 @@ router = Router(name="router_menu")
 router.message.filter(IsUserReg())
 
 
-@router.message(Text('Мои ленты'))
+@router.message(Text('📃Мои ленты'))
 async def cmd_myfeeds(message: Message, session: AsyncSession):
     """Выводит юзеру список его лент"""
     feeds_tuple = await db_feeds.get_user_feeds(session, message.chat.id)
@@ -51,12 +51,12 @@ async def cmd_feed_action(callback: CallbackQuery, callback_data: FeedActionsFac
     if callback_data.action == FeedActions.DELETE.value:
         result = await db_feeds.delete_user_feed(session, callback.from_user.id, callback_data.id_feed)
         mes = 'Лента удалена' if result else 'Ошибка удаления ленты'
-        await callback.message.answer(mes) # type: ignore
+        await callback.message.answer(mes)  # type: ignore
 
     await callback.answer()
 
 
-@router.message(Text('Подписаться на новую'))
+@router.message(Text('📫Подписаться на новую'))
 async def cmd_newfeed_link_ask(message: Message, state: FSMContext):
     """Запрос ссылки на новую ленту"""
     await message.answer('Введите ссылку на RSS-ленту', reply_markup=keyboards.get_onlycancel_keyb())
