@@ -2,14 +2,13 @@
 
 [![Linting Python files](https://github.com/Galakart/RssTelegramBot/actions/workflows/lint-develop-job.yml/badge.svg)](https://github.com/Galakart/RssTelegramBot/actions/workflows/lint-develop-job.yml) [![Deploy on Docker](https://github.com/Galakart/RssTelegramBot/actions/workflows/deploy-on-master-job.yml/badge.svg)](https://github.com/Galakart/RssTelegramBot/actions/workflows/deploy-on-master-job.yml)
 
-### Описание
 Telegram бот, который выкачивает и отправляет посты из RSS-лент новостей.
 
-### Требования
+## Требования
 - Linux
 - Docker Compose
 
-### Установка
+## Установка
 1. В Telegram создать себе нового бота. Для этого нужно написать боту https://t.me/BotFather, отправить ему команду /newbot и задать имя бота.
 В ответ получим api-токен.
 
@@ -26,7 +25,7 @@ cp env_example .env
 
 4. Отредактировать этот файл настроек, в частности в поле BOT_TOKEN обязательно вписать api-токен созданного бота. Остальные параметры поменять по желанию
 
-### Запуск
+## Запуск
 Старт бота:
 ```bash
 docker compose up -d
@@ -37,7 +36,7 @@ docker compose up -d
 docker compose down
 ```
 
-### Использование
+## Использование
 После команды /start бот автоматически регистрирует первого написавшего ему пользователя, после чего переходит в главное меню.
 
 В главном меню бота доступны две кнопки:
@@ -50,7 +49,7 @@ docker compose down
 
 Проверить список своих подписок на RSS-ленты и удалить их - можно в пункте меню "Мои ленты".
 
-#### Запуск в dev-окружении (для программистов)
+## Запуск в dev-окружении (для программистов)
 Пересборка проекта, старт бота и открытие порта БД для внешнего доступа:
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
